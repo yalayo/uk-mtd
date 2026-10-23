@@ -1,0 +1,21 @@
+{
+  "name": "@poly/cloudflare",
+  "description": "",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "shadow-cljs watch server -A:dev",
+    "release": "shadow-cljs release server -A:dev",
+    "test": "shadow-cljs compile test && node out/test/node-tests.js"
+  },
+  "workspaces": [
+    "../../bases/worker"
+  ],
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "shadow-cljs": "^3.2.1",
+    "wrangler": "^4.42.2"
+  }
+}

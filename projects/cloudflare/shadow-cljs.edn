@@ -1,0 +1,14 @@
+{:deps {:aliases [:dev :test]}
+ :builds {:test {:target    :node-test
+                 :output-to "out/test/node-tests.js"
+                 ;; picks up conventional *-test namespaces plus fugato model suites
+                 :ns-regexp "(-test|fugato)$"}
+          :server {:target :esm
+                   :output-dir "out"
+                   :modules {:main {:exports {default app.worker.core/handler}}}
+                   :js-options {:js-provider :import}
+                   :devtools {:enabled false}
+                   :release {:js-options {:optimizations :advanced
+                                 :pretty-print false
+                                 :source-map false} 
+                             :devtools {:enabled false}}}}}
