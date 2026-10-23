@@ -1,0 +1,23 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+.clj-kondo/*
+.portal/*
+.calva/*
+.lsp/*
+.cpcache/*
+.config/*
+
+**/.clj-kondo/*
+**/.portal/*
+**/.calva/*
+**/.lsp/*
+**/.cpcache/*
+**/.config/*
+
+# Other
+.vscode/*
