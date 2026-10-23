@@ -2,3 +2,31 @@ name = "mtd-app"
 main = "out/main.js"
 compatibility_date = "2025-02-04"
 compatibility_flags = ["nodejs_compat"]
+
+[vars]
+TABLE_PREFIX = "mtd"
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "main-db"
+database_id = "local"
+migrations_dir = "./migrations"
+migrations_table = "local_migrations"
+
+[env.production]
+name = "props-backend-production"
+vars = { NODE_ENV = "production", TABLE_PREFIX = "mtd" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "main-db"
+database_id = "${DATABASE_ID}"
+migrations_dir = "migrations"
+migrations_table = "prod_migrations"
+
+[[env.production.routes]]
+pattern = "mtd.anudis.com/*"
+zone_id = "${ZONE_ID}"
