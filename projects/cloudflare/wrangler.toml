@@ -17,7 +17,7 @@ migrations_dir = "./migrations"
 migrations_table = "local_migrations"
 
 [env.production]
-name = "props-backend-production"
+name = "mtd-production"
 vars = { NODE_ENV = "production", TABLE_PREFIX = "mtd" }
 
 [[env.production.d1_databases]]
