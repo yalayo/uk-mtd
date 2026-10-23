@@ -1,0 +1,80 @@
+name: Deploy Worker
+
+on:
+  workflow_dispatch:
+  #push:
+    #branches: [main, master]
+    #paths:
+    #- '.github/workflows/worker.yml'
+    #- 'bases/worker/**'
+    #- 'projects/cloudflare/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: projects/cloudflare/package-lock.json
+
+      - name: Install Clojure tools 1.12.0
+        uses: DeLaGuardo/setup-clojure@13.4
+        with:
+          cli: 1.12.0.1530
+
+      - name: Install dependencies
+        run: cd projects/cloudflare && npm ci
+
+      # Unit, integration and system (fugato) tests — see TESTING.md.
+      # Compiles the :test build and runs it on Node; exits non-zero on any
+      # failure, so a red suite blocks the build and deploy below.
+      #- name: Run tests (unit, integration, system)
+      #  run: |
+      #    cd projects/cloudflare
+      #    npm test
+
+      - name: Build application
+        run: |
+          cd projects/cloudflare
+          npm run release
+
+      - name: Inject DATABASE_ID into wrangler.toml
+        run: |
+          cd ./projects/cloudflare
+          sed -i "s|database_id = \".*\"|database_id = \"${{ secrets.DATABASE_ID }}\"|" wrangler.toml
+
+      - name: Inject ZONE_ID into wrangler.toml
+        run: |
+          cd ./projects/cloudflare
+          sed -i "s|zone_id = \".*\"|zone_id = \"${{ secrets.ZONE_ID }}\"|" wrangler.toml
+
+      - name: Upload secrets to the cloudflare backend
+        run: |
+          cd ./projects/cloudflare
+          echo "${{ secrets.JWT_SECRET }}" | npx wrangler secret put JWT_SECRET --env production
+          echo "${{ secrets.GA_SECRET }}" | npx wrangler secret put GA_SECRET --env production
+          echo "${{ secrets.STRIPE_SECRET_KEY }}" | npx wrangler secret put STRIPE_SECRET_KEY --env production
+          echo "${{ secrets.SUPER_ADMIN_EMAIL }}" | npx wrangler secret put SUPER_ADMIN_EMAIL --env production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy to Cloudflare Workers
+        run: |
+          cd ./projects/cloudflare  
+          npx wrangler deploy --env production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
